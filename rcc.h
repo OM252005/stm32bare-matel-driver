@@ -130,7 +130,8 @@ typedef enum
     RCC_GPIOA = 0U,
     RCC_GPIOB,
     RCC_GPIOC,
-    RCC_GPIOD
+    RCC_GPIOD,
+    RCC_GPIOE
     
 
 } RCC_GPIO_Port_t;
@@ -143,6 +144,21 @@ _________________________________________________________________
 _____________________________________________________________________
 
 */
+
+
+
+
+
+
+
+
+#define RCC_SYSCLK_HSI     0U
+#define RCC_SYSCLK_HSE     1U
+#define RCC_SYSCLK_PLL     2U
+
+
+
+
 
 
 #define RCC_PLL_SOURCE_HSI_DIV2    0U
@@ -265,5 +281,24 @@ uint32_t RCC_GetSYSCLK(void);
 uint32_t RCC_GetHCLK(void);
 uint32_t RCC_GetPCLK1(void);
 uint32_t RCC_GetPCLK2(void);
+
+
+
+
+
+// APIS 
+/*_____________________________________________________________________________________________________
+
+_______________________________________________________________________________________________________
+
+__________________________________________________________________________________________________________*/
+/* USART clock  */
+
+
+#define RCC_APB2ENR_USART1EN_POS 14u
+
+void RCC_EnableUSART1Clock(void);
+void RCC_EnableUSART1Clock(void);
+
 
 #endif
