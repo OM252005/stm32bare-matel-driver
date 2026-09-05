@@ -1,82 +1,142 @@
 #include "gpio.h"
 
-// use api and write data in the file of gpio.c 
 
-void GPIO_Init(GPIO_TypeDef *GPIOx, GPIO_PinConfig_t *Config)
+/*=========================================================
+ * GPIO INITIALIZATION
+ *=========================================================*/
+
+void GPIO_Init(GPIO_TypeDef *GPIOx,
+               GPIO_Pin pin,
+               uint32_t mode,
+               uint32_t cnf)
 {
-       uint32_t position     =   Config->Pin;
-       uint32_t mode         =   Config->Mode;
-       uint32_t output_type  =   Config->OutputType;
-       uint32_t output_speed =   Config->Speed;
-       uint32_t pull         =   Config->Pull;
-       uint32_t alternate    =   Config->Alternate;
-       
+    uint32_t position;
+    uint32_t config;
 
-// this will connect the  pin_Config  ration
-GPIOx->MODER &=    ~(0x3U << (position * 2U));
-GPIOx->MODER |=     (mode << (position * 2U)); //moving value of position pin in to mode
-
-
-GPIOx->OTYPER &=   ~(1U<<position);
-GPIOx->OTYPER |=    (output_type << position);  // moving value of position pin to the outputtyper
+    /*
+     * STM32F1:
+     *
+     * Each GPIO pin uses 4 configuration bits:
+     *
+     * [3:2] = CNF
+     * [1:0] = MODE
+     */
+    config = (mode & 0x3U) | ((cnf & 0x3U) << 2U);
 
 
-GPIOx->OSPEEDR &=   (0x2U << (position*2u ));
-GPIOx->OSPEEDR |=   (output_speed << (position*2U)) ;  // moving value of position ppin to the ospeedr
+    /*-----------------------------------------------------
+     * Pins 0 - 7  -> CRL
+     *-----------------------------------------------------*/
 
-
-GPIOx->PUPDR   &=  ~(0x3u << (position*2u));
-GPIOx->PUPDR  |=    (pull << (position*2U)); //moving value of position
-
-
-GPIOx->AFRL &= ~(0xFu << (position * 4U));
-GPIOx->AFRL |= (alternate << (position * 4U));// remember that alternate function register uses position vectors at 4bype
-
-
-GPIOx->AFRH &= ~(0xFu << (position * 4U));
-GPIOx->AFRH |= (alternate << (position * 4U));
-}
-
-void GPIO_DeInit(GPIO_TypeDef *GPIOx)
-{
-    GPIOx->MODER   = 0x00000000U;
-    GPIOx->OTYPER  = 0x00000000U;
-    GPIOx->OSPEEDR = 0x00000000U;
-    GPIOx->PUPDR   = 0x00000000U;
-    GPIOx->ODR     = 0x00000000U;
-    GPIOx->AFRL    = 0x00000000U;
-    GPIOx->AFRH    = 0x00000000U;
-}
-
- void GPTIO_WritePin(GPIO_TypeDef*GPIOx,uint8_t Pin,uint8_t State)
-{
-    if(State ==GPIO_PIN_SET)
+    if (pin <= GPIO_PIN_7)
     {
-        GPIOx->ODR |= (1u<<Pin);
+        position = ((uint32_t)pin * 4U);
+
+        /* Clear existing configuration */
+        GPIOx->CRL &= ~(0xFU << position);
+
+        /* Write new configuration */
+        GPIOx->CRL |= (config << position);
+    }
+
+
+    /*-----------------------------------------------------
+     * Pins 8 - 15 -> CRH
+     *-----------------------------------------------------*/
+
+    else
+    {
+        position = (((uint32_t)pin - 8U) * 4U);
+
+        /* Clear existing configuration */
+        GPIOx->CRH &= ~(0xFU << position);
+
+        /* Write new configuration */
+        GPIOx->CRH |= (config << position);
+    }
+}
+
+
+/*=========================================================
+ * GPIO WRITE
+ *=========================================================*/
+
+void GPIO_Write(GPIO_TypeDef *GPIOx,
+                GPIO_Pin pin,
+                GPIO_State state)
+{
+    if (state == GPIO_PIN_SET)
+    {
+        /*
+         * BSRR lower 16 bits -> SET
+         */
+        GPIOx->BSRR = (1U << (uint32_t)pin);
     }
     else
     {
-        GPIOx->ODR &= ~(1u<<Pin);
+        /*
+         * BRR -> RESET
+         */
+        GPIOx->BRR = (1U << (uint32_t)pin);
     }
 }
-void GPIO_TogglePin (GPIO_TypeDef*GPIOx,uint8_t Pin)
+
+
+/*=========================================================
+ * GPIO READ
+ *=========================================================*/
+
+GPIO_State GPIO_Read(GPIO_TypeDef *GPIOx,
+                     GPIO_Pin pin)
 {
-    GPIOx->ODR ^= (1u<<Pin);
-}
-uint8_t GPIO_ReadPin(GPIO_TypeDef *GPIOx, uint8_t Pin)
-{
-    return (GPIOx->IDR >> Pin) & 1U;
+    if ((GPIOx->IDR & (1U << (uint32_t)pin)) != 0U)
+    {
+        return GPIO_PIN_SET;
+    }
+
+    return GPIO_PIN_RESET;
 }
 
-void GPIO_WritePort(GPIO_TypeDef *GPIOx, uint16_t Value)
-// remember thet write pin need 16 byte data 
-// and value reguster 
+
+/*=========================================================
+ * GPIO TOGGLE
+ *=========================================================*/
+
+void GPIO_Toggle(GPIO_TypeDef *GPIOx,
+                 GPIO_Pin pin)
 {
-    GPIOx->ODR = Value;
+    GPIOx->ODR ^= (1U << (uint32_t)pin);
 }
+
+
+/*=========================================================
+ * GPIO WRITE PORT
+ *=========================================================*/
+
+void GPIO_WritePort(GPIO_TypeDef *GPIOx,
+                    uint16_t value)
+{
+    GPIOx->ODR = value;
+}
+
+
+/*=========================================================
+ * GPIO READ PORT
+ *=========================================================*/
+
 uint16_t GPIO_ReadPort(GPIO_TypeDef *GPIOx)
-
-//remember that read port and read pin uses only of the uint16_t function only ;)) 
 {
     return (uint16_t)GPIOx->IDR;
+}
+
+
+/*=========================================================
+ * GPIO DE-INITIALIZATION
+ *=========================================================*/
+
+void GPIO_DeInit(GPIO_TypeDef *GPIOx)
+{
+    GPIOx->CRL  = 0x44444444U;
+    GPIOx->CRH  = 0x44444444U;
+    GPIOx->ODR  = 0x00000000U;
 }
