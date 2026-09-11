@@ -90,6 +90,9 @@ typedef struct
 #define GPIO_OUTPUT_AF_OD        0x3U
 
 // state 
+
+// i created this states for the better understand in purposes 
+// high as 1 and low as 0
 typedef enum
 {
     GPIO_STATE_LOW = 0,
