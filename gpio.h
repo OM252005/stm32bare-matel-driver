@@ -100,18 +100,18 @@ typedef enum
 } GPIO_State;
 
 
-void GPIO_Init(GPIO_TypeDef *GPIOx,
-                   GPIO_Pin pin,
-                   uint32_t mode,
+void GPIO_Init(GPIO_TypeDef *GPIOx,  // need address and register acess 
+                   GPIO_Pin pin,  // pin and  there two are nessay 
+                   uint32_t mode,  // mmode innormally for initilization 
                    uint32_t cnf);
 
-void GPIO_Write(GPIO_TypeDef *GPIOx,
-                GPIO_Pin pin,
-                GPIO_State state);
+void GPIO_Write(GPIO_TypeDef *GPIOx, // same as init 
+                GPIO_Pin pin,  // same as init 
+                GPIO_State state);  // need state 
 
 
 GPIO_State GPIO_Read(GPIO_TypeDef *GPIOx,
-                     GPIO_Pin pin);
+                     GPIO_Pin pin); // need to rea only same as int upper tow 
 
 
 #endif// ending guard band 
