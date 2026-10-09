@@ -65,18 +65,12 @@ void GPIO_Write(GPIO_TypeDef *GPIOx,
                 GPIO_Pin pin,
                 GPIO_State state)
 {
-    if (state == GPIO_PIN_SET)
+    if (state == GPIO_STATE_HIGH)
     {
-        /*
-         * BSRR lower 16 bits -> SET
-         */
         GPIOx->BSRR = (1U << (uint32_t)pin);
     }
     else
     {
-        /*
-         * BRR -> RESET
-         */
         GPIOx->BRR = (1U << (uint32_t)pin);
     }
 }
@@ -86,17 +80,17 @@ void GPIO_Write(GPIO_TypeDef *GPIOx,
  * GPIO READ
  *=========================================================*/
 
+
 GPIO_State GPIO_Read(GPIO_TypeDef *GPIOx,
                      GPIO_Pin pin)
 {
     if ((GPIOx->IDR & (1U << (uint32_t)pin)) != 0U)
     {
-        return GPIO_PIN_SET;
+        return GPIO_STATE_HIGH;
     }
 
-    return GPIO_PIN_RESET;
+    return GPIO_STATE_LOW;
 }
-
 
 /*=========================================================
  * GPIO TOGGLE
