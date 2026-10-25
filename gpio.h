@@ -1,5 +1,5 @@
-#ifndef GPIO_H// providing gaurd band
-#define  GPIO_H// defining the gaurd band
+#ifndef GPIO_H// providing gaurd 
+#define  GPIO_H// defining the gaurd 
 #include<stdint.h>
 
 
